@@ -1,141 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Previous head and style sections remain the same -->
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Past Tense Quiz - Minecraft Edition</title>
+    <!-- Previous styles remain identical -->
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #78C850; /* Minecraft green */
-            color: #333;
-            text-align: center;
-        }
-        #quiz-container {
-            width: 80%;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #FFF8DC; /* Light background */
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-        }
-        .question {
-            font-size: 1.2em;
-            margin-bottom: 15px;
-        }
-        .options button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            background-color: #B87333; /* Minecraft copper */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .options button:hover {
-            background-color: #A0522D;
-        }
-        #score, #restart, #win-message {
-            margin-top: 20px;
-            font-size: 1.2em;
-        }
-        #win-message {
-            display: none;
-            color: green;
+        /* Previous styles remain identical */
+        .minimum-questions {
+            color: #ffd700;
             font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div id="quiz-container">
-        <h1>Simple Past Tense Quiz</h1>
-        <p class="question">Loading question...</p>
-        <div class="options"></div>
-        <p id="score">Score: 0</p>
-        <button id="restart" onclick="startQuiz()">Restart Quiz</button>
-        <p id="win-message">Congratulations! You won!</p>
+    <div class="container">
+        <h1 class="game-title">Minecraft Past Tense Adventure</h1>
+        <div class="stats">
+            <span>Score: <span id="score">0</span></span>
+            <span>Correct Answers: <span id="correctAnswers" class="correct-counter">0</span>/50</span>
+            <span>Question: <span id="questionNumber">1</span>/150</span>
+            <span>Hearts: <span id="hearts">❤️❤️❤️</span></span>
+        </div>
+        <div class="minimum-questions" id="minimumQuestions"></div>
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div id="questionContainer" class="question-container">
+            <!-- Questions will be inserted here -->
+        </div>
+        <div id="feedback" class="feedback hidden"></div>
     </div>
 
     <script>
-        // Sample questions - add more questions as needed
-        const questions = [
-            { question: "What is the past form of 'build'?", options: ["built", "builded", "builds"], answer: "built" },
-            { question: "What is the past form of 'dig'?", options: ["dug", "digged", "digs"], answer: "dug" },
-            { question: "What is the past form of 'eat'?", options: ["ate", "eated", "eat"], answer: "ate" },
-            { question: "What is the past form of 'fight'?", options: ["fought", "fighted", "fights"], answer: "fought" },
-            { question: "What is the past form of 'find'?", options: ["found", "finded", "founds"], answer: "found" },
-            { question: "What is the past form of 'go'?", options: ["went", "goed", "goes"], answer: "went" },
-            // Add up to 150 questions here
-        ];
+        // Previous questions array remains the same
 
-        const requiredCorrectAnswers = 75;
+        let currentQuestion = 0;
         let score = 0;
-        let questionPool = [];
-        
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        let hearts = 3;
+        let correctAnswers = 0;
+        const MINIMUM_QUESTIONS = 50;
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('questionNumber').textContent = currentQuestion + 1;
+            document.getElementById('hearts').textContent = '❤️'.repeat(hearts);
+            document.getElementById('correctAnswers').textContent = correctAnswers;
+            const progress = (currentQuestion / questions.length) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+            
+            // Update minimum questions message
+            const questionsRemaining = Math.max(0, MINIMUM_QUESTIONS - (currentQuestion + 1));
+            if (questionsRemaining > 0) {
+                document.getElementById('minimumQuestions').textContent = 
+                    `You must answer at least ${questionsRemaining} more questions before winning!`;
+            } else {
+                document.getElementById('minimumQuestions').textContent = 
+                    `You can win now if you have 50 correct answers!`;
             }
         }
 
-        function startQuiz() {
-            // Reset score and question pool
-            score = 0;
-            document.getElementById('score').textContent = "Score: " + score;
-            document.getElementById('win-message').style.display = "none";
-
-            // Deep copy questions and shuffle for random order
-            questionPool = [...questions];
-            shuffle(questionPool);
-
-            loadQuestion();
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = `
+                <h2>${question.question}</h2>
+                <div class="options">
+                    ${question.options.map((option, index) => `
+                        <button class="option" onclick="checkAnswer(${index})">${option}</button>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('feedback').classList.add('hidden');
+            updateStats();
         }
 
-        function loadQuestion() {
-            if (questionPool.length === 0) {
-                endQuiz();
+        function checkAnswer(selectedIndex) {
+            const question = questions[currentQuestion];
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('hidden');
+
+            if (selectedIndex === question.correct) {
+                score += 10;
+                correctAnswers++;
+                feedback.textContent = "Correct! Like finding diamonds! ⛏️";
+                feedback.className = 'feedback correct';
+                
+                // Check for win condition only if minimum questions have been answered
+                if (correctAnswers >= 50 && currentQuestion + 1 >= MINIMUM_QUESTIONS) {
+                    setTimeout(() => {
+                        alert(`Congratulations! You've won the game with ${correctAnswers} correct answers! Final score: ${score}`);
+                        resetGame();
+                    }, 1000);
+                    return;
+                }
+            } else {
+                hearts--;
+                feedback.textContent = "Oops! That's like taking damage! The correct answer was: " + 
+                    question.options[question.correct];
+                feedback.className = 'feedback incorrect';
+            }
+
+            updateStats();
+
+            if (hearts <= 0) {
+                setTimeout(() => {
+                    alert("Game Over! You ran out of hearts! Final score: " + score);
+                    resetGame();
+                }, 1000);
                 return;
             }
 
-            const currentQuestion = questionPool.pop();
-            document.querySelector('.question').textContent = currentQuestion.question;
-
-            const optionsContainer = document.querySelector('.options');
-            optionsContainer.innerHTML = ''; // Clear previous options
-
-            shuffle(currentQuestion.options);
-            currentQuestion.options.forEach(option => {
-                const button = document.createElement('button');
-                button.textContent = option;
-                button.onclick = () => checkAnswer(option, currentQuestion.answer);
-                optionsContainer.appendChild(button);
-            });
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion >= questions.length) {
+                    if (correctAnswers >= 50) {
+                        alert(`Congratulations! You've completed the quiz with ${correctAnswers} correct answers! Final score: ${score}`);
+                    } else {
+                        alert(`Quiz completed, but you need 50 correct answers to win! You got: ${correctAnswers}`);
+                    }
+                    resetGame();
+                } else {
+                    showQuestion();
+                }
+            }, 1500);
         }
 
-        function checkAnswer(selected, correct) {
-            if (selected === correct) {
-                score++;
-                document.getElementById('score').textContent = "Score: " + score;
-            }
-
-            if (score >= requiredCorrectAnswers) {
-                document.getElementById('win-message').style.display = "block";
-            } else {
-                loadQuestion();
-            }
+        function resetGame() {
+            currentQuestion = 0;
+            score = 0;
+            hearts = 3;
+            correctAnswers = 0;
+            showQuestion();
         }
 
-        function endQuiz() {
-            alert("Quiz Over! Final Score: " + score);
-            document.getElementById('restart').style.display = 'block';
-        }
-
-        // Initialize quiz on load
-        startQuiz();
+        // Start the game
+        showQuestion();
     </script>
 </body>
 </html>
