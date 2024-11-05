@@ -47,6 +47,22 @@
             color: green;
             font-weight: bold;
         }
+        #explanation {
+            display: none;
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #D2691E; /* Highlight incorrect explanations */
+        }
+        #next-button {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -57,23 +73,26 @@
         <p id="score">Score: 0</p>
         <button id="restart" onclick="startQuiz()">Restart Quiz</button>
         <p id="win-message">Congratulations! You won!</p>
+        <p id="explanation"></p>
+        <button id="next-button" onclick="nextQuestion()">Next</button>
     </div>
 
     <script>
-        // Sample questions - add more questions as needed
+        // Sample questions with explanations
         const questions = [
-            { question: "What is the past form of 'build'?", options: ["built", "builded", "builds"], answer: "built" },
-            { question: "What is the past form of 'dig'?", options: ["dug", "digged", "digs"], answer: "dug" },
-            { question: "What is the past form of 'eat'?", options: ["ate", "eated", "eat"], answer: "ate" },
-            { question: "What is the past form of 'fight'?", options: ["fought", "fighted", "fights"], answer: "fought" },
-            { question: "What is the past form of 'find'?", options: ["found", "finded", "founds"], answer: "found" },
-            { question: "What is the past form of 'go'?", options: ["went", "goed", "goes"], answer: "went" },
+            { question: "What is the past form of 'build'?", options: ["built", "builded", "builds"], answer: "built", explanation: "The correct past form of 'build' is 'built'." },
+            { question: "What is the past form of 'dig'?", options: ["dug", "digged", "digs"], answer: "dug", explanation: "The correct past form of 'dig' is 'dug'." },
+            { question: "What is the past form of 'eat'?", options: ["ate", "eated", "eat"], answer: "ate", explanation: "The correct past form of 'eat' is 'ate'." },
+            { question: "What is the past form of 'fight'?", options: ["fought", "fighted", "fights"], answer: "fought", explanation: "The correct past form of 'fight' is 'fought'." },
+            { question: "What is the past form of 'find'?", options: ["found", "finded", "founds"], answer: "found", explanation: "The correct past form of 'find' is 'found'." },
+            { question: "What is the past form of 'go'?", options: ["went", "goed", "goes"], answer: "went", explanation: "The correct past form of 'go' is 'went'." },
             // Add up to 150 questions here
         ];
 
         const requiredCorrectAnswers = 75;
         let score = 0;
         let questionPool = [];
+        let currentQuestion = null;
         
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -83,12 +102,14 @@
         }
 
         function startQuiz() {
-            // Reset score and question pool
+            // Reset score, question pool, and hide messages
             score = 0;
             document.getElementById('score').textContent = "Score: " + score;
             document.getElementById('win-message').style.display = "none";
+            document.getElementById('explanation').style.display = "none";
+            document.getElementById('next-button').style.display = "none";
 
-            // Deep copy questions and shuffle for random order
+            // Shuffle questions for random order
             questionPool = [...questions];
             shuffle(questionPool);
 
@@ -101,7 +122,7 @@
                 return;
             }
 
-            const currentQuestion = questionPool.pop();
+            currentQuestion = questionPool.pop();
             document.querySelector('.question').textContent = currentQuestion.question;
 
             const optionsContainer = document.querySelector('.options');
@@ -111,22 +132,37 @@
             currentQuestion.options.forEach(option => {
                 const button = document.createElement('button');
                 button.textContent = option;
-                button.onclick = () => checkAnswer(option, currentQuestion.answer);
+                button.onclick = () => checkAnswer(option);
                 optionsContainer.appendChild(button);
             });
+
+            document.getElementById('explanation').style.display = "none";
+            document.getElementById('next-button').style.display = "none";
         }
 
-        function checkAnswer(selected, correct) {
-            if (selected === correct) {
+        function checkAnswer(selected) {
+            if (selected === currentQuestion.answer) {
                 score++;
                 document.getElementById('score').textContent = "Score: " + score;
+                loadQuestion();
+            } else {
+                showExplanation();
             }
 
             if (score >= requiredCorrectAnswers) {
                 document.getElementById('win-message').style.display = "block";
-            } else {
-                loadQuestion();
             }
+        }
+
+        function showExplanation() {
+            const explanation = document.getElementById('explanation');
+            explanation.textContent = "Incorrect. " + currentQuestion.explanation;
+            explanation.style.display = "block";
+            document.getElementById('next-button').style.display = "block";
+        }
+
+        function nextQuestion() {
+            loadQuestion();
         }
 
         function endQuiz() {
